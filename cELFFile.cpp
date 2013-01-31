@@ -1,3 +1,23 @@
+/*
+ *
+ *  Copyright (C) 2013  Anwar Mohamed <anwarelmakrahy[at]gmail.com>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to Anwar Mohamed
+ *  anwarelmakrahy[at]gmail.com
+ *
+ */
+
 #include <vector>
 #include <cstdlib>
 #include <iostream>
@@ -144,7 +164,7 @@ void cELFFile::initImports()
 	nDynamics = (SHeader[DynArray].sh_size/sizeof(Elf32_Dyn));
 	Dynamics = (DYNAMICS*)malloc(sizeof(DYNAMICS) * nDynamics);
 
-	vector<int> nnImports;
+	/*vector<int> nnImports;
 	for (unsigned int i=0; i < nDynamics; i++)
 	{
 		if (DynamicTable[i].d_tag==1)
@@ -160,6 +180,20 @@ void cELFFile::initImports()
 	{
 		Imports[i].Value =  DynamicTable[nnImports[i]].d_un.d_val;
 		Imports[i].Name = (char*)(dStringTable + DynamicTable[nnImports[i]].d_un.d_val);
+	}*/
+
+	nImports = nDynamics;
+	Imports = (IMPORTS*)malloc(sizeof(IMPORTS) * nImports);
+
+	for (unsigned int i=0; i < nImports; i++)
+	{
+		Imports[i].Tag = DynamicTable[i].d_tag;
+		DWORD t = DynamicTable[i].d_tag;
+		if (t==DT_NEEDED || t==DT_SONAME || t==DT_RPATH)
+			Imports[i].Name = (char*)(dStringTable + DynamicTable[i].d_un.d_val);
+
+		else
+			Imports[i].Value = DynamicTable[i].d_un.d_val;
 	}
 
 }
