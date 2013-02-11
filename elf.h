@@ -435,4 +435,11 @@ struct Elf32_Dyn
 #define DT_VERSYM   0x6ffffff0
 	
 
+struct elf32_rel 
+{
+	Elf32_Addr    r_offset;
+	Elf32_Word    r_info;
+};
+
+
 #endif

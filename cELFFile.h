@@ -72,6 +72,7 @@ private:
 	void initDynSymbols();
 	void initImports();
 	void initSymbols();
+	void initPLTRelocations();
 
 	char* sStringTable;
 	char* dStringTable;
@@ -81,6 +82,7 @@ private:
 	Elf32_Sym* DynamicSymbolsTable;
 	Elf32_Sym* SymbolsTable;
 	Elf32_Dyn* DynamicTable;
+	elf32_rel* PLTRelocationsTable;
 	
 public:
 	//Variables
@@ -94,9 +96,11 @@ public:
 	unsigned int nImports;
 	unsigned int nDynamics;
 	unsigned int nDynamicSymbols;
+	unsigned int nPLTRelocations;
 
 	SECTIONS* Sections;
 	DYNAMICSYMBOLS* DynamicSymbols;
+	DYNAMICSYMBOLS* PLTRelocations;
 	SYMBOLS* Symbols;
 	IMPORTS* Imports;
 	DYNAMICS* Dynamics;

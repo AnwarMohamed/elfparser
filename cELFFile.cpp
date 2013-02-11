@@ -18,8 +18,6 @@
  *
  */
 
-#include <vector>
-#include <cstdlib>
 #include <iostream>
 #include "cELFFile.h"
 
@@ -70,6 +68,7 @@ bool cELFFile::ParseELF()
 	initImports();
 	initDynSymbols();
 	initSymbols();
+	initPLTRelocations();
 
 	return true;
 }
@@ -164,24 +163,6 @@ void cELFFile::initImports()
 	nDynamics = (SHeader[DynArray].sh_size/sizeof(Elf32_Dyn));
 	Dynamics = (DYNAMICS*)malloc(sizeof(DYNAMICS) * nDynamics);
 
-	/*vector<int> nnImports;
-	for (unsigned int i=0; i < nDynamics; i++)
-	{
-		if (DynamicTable[i].d_tag==1)
-		{
-			nnImports.push_back(i);
-		}
-	}
-
-	nImports = nnImports.size();
-	Imports = (IMPORTS*)malloc(sizeof(IMPORTS) * nnImports.size());
-
-	for (unsigned int i=0; i < nnImports.size(); i++)
-	{
-		Imports[i].Value =  DynamicTable[nnImports[i]].d_un.d_val;
-		Imports[i].Name = (char*)(dStringTable + DynamicTable[nnImports[i]].d_un.d_val);
-	}*/
-
 	nImports = nDynamics;
 	Imports = (IMPORTS*)malloc(sizeof(IMPORTS) * nImports);
 
@@ -195,5 +176,33 @@ void cELFFile::initImports()
 		else
 			Imports[i].Value = DynamicTable[i].d_un.d_val;
 	}
-
 }
+
+void cELFFile::initPLTRelocations()
+{
+	unsigned int pltindex = NULL;
+	nPLTRelocations = 0;
+
+	for (unsigned i=0; i<nSections; i++)
+	{
+		if (SHeader[i].sh_type == SHT_REL && strcmp(".rel.plt",Sections[i].Name) == 0) 
+		{
+			pltindex = i;
+		}
+	}
+
+	if (pltindex == NULL) return;
+
+	nPLTRelocations = SHeader[pltindex].sh_size/sizeof(elf32_rel);
+
+	PLTRelocationsTable = (elf32_rel*)malloc(SHeader[pltindex].sh_size);
+	PLTRelocationsTable = (elf32_rel*)(BaseAddress + SHeader[pltindex].sh_offset);
+	
+	PLTRelocations = (DYNAMICSYMBOLS*)malloc(sizeof(DYNAMICSYMBOLS) * nPLTRelocations);
+
+	for (unsigned int j=0; j<nPLTRelocations; j++)
+	{
+		PLTRelocations[j].Address = PLTRelocationsTable[j].r_offset;
+		PLTRelocations[j].Name = DynamicSymbols[ELF32_R_SYM(PLTRelocationsTable[j].r_info)].Name;
+	}
+};
